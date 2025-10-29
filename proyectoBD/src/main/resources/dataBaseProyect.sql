@@ -1,5 +1,5 @@
-DROP DATABASE EmpresaEnergiaCC;
 CREATE DATABASE EmpresaEnergiaCC;
+
 USE EmpresaEnergiaCC;
 -- luego ejecutás el script completo desde cero
 
