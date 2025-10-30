@@ -60,7 +60,7 @@ public class App {
                             insertarUsuario(connection, input);
                             break;
                         case 2:
-                            //borrarReclamo(connection, input);
+                            borrarReclamo(connection, input);
                             break;
                         case 3:
                             //listarReclamos(connection);
@@ -99,6 +99,23 @@ public class App {
             }
         } catch (SQLException e) {
             System.err.println("Error al insertar el usuario: " + e.getMessage());
+        }
+    }
+
+    public static void borrarReclamo(Connection connection,Scanner input)
+    {
+         System.out.print("ingresa la numero de reclamo: ");
+            int nro_reclamo = input.nextInt();
+        try {
+            String sql = "DELETE FROM reclamo WHERE NRO_RECLAMO = " + nro_reclamo ; //Genero la consulta como string
+            Statement statement = connection.createStatement(); //Creo el statement
+            int insertar = statement.executeUpdate(sql); //Ejecuto la consulta
+
+            if (insertar > 0) {
+                System.out.println("Reclamo eliminado exitosamente.");
+            }
+        } catch (SQLException e) {
+            System.err.println("Error al eliminar reclamo: " + e.getMessage());
         }
     }
 
