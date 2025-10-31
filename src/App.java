@@ -63,7 +63,7 @@ public class App {
                             borrarReclamo(connection, input);
                             break;
                         case 3:
-                            //listarReclamos(connection);
+                            listarReclamos(connection, input);
                             break;
                         default:
                             System.out.println("Cerrando conexión. Adiós.");
@@ -119,6 +119,32 @@ public class App {
         }
     }
 
+    public static void listarReclamos(Connection connection, Scanner input){
+
+        System.out.println("Ingrese el numero identificatorio del usuario, para poder buscar sus reclamos: ");
+        int nro_usuario = input.nextInt();
+        
+        try{
+            String sql = "SELECT r.NRO_RECLAMO AS NRO_RECLAMO, r.FECHA_Y HORA AS FECHA_RECLAMO, r_FECHA_RESOLUCION AS FECHA_RESOLUCION, COUNT(l.NRO_LLAMADO) AS CANTIDAD_RELLAMADOS FROM reclamo AS r LEFT JOIN llamado AS l ON r.NRO_RECLAMO == l.NRO_RECLAMO WHERE r.NRO_IDENTIFICATORIO = " + nro_usuario + " ORDER BY r.FECHA_Y_HORA";
+            Statement statement  = connection.createStatement();
+            ResultSet resultSet = statement.executeQuery(sql);
+
+            System.out.println();
+            System.out.println("Listado de reclamos efectuados por el usuario: " + nro_usuario);
+            while(resultSet.next()){
+                System.out.print("Nro_Reclamo" + resultSet.getString("NRO_RECLAMO") );
+                System.out.print("; FECHA_RECLAMO" + resultSet.getString("FECHA_RECLAMO") );
+                System.out.print("; FECHA_RESOLUCION" + resultSet.getString("FECHA_RESOLUCION") );
+                System.out.print("; CANTIDAD_RELLAMADOS" + resultSet.getString("CANTIDAD_RELLAMADOS") );
+                System.out.println();
+        
+            }
+
+        }catch (SQLException e){
+            System.err.println("Error al mostrar los reclamos: " + e.getMessage());
+        }
+
+    }
 
     //FINAL DE LA CLASE APP
 }
