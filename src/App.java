@@ -43,12 +43,13 @@ public class App {
         boolean exit = false;
         
          while (!exit) {
-                
+                System.out.println("---------------------------------------------------------------\n");
                 System.out.println("---Menu de opciones---\n" +
 		                            "1) Insertar un usuario\n" +
 		                            "2) Eliminar un reclamo\n" +
 		                            "3) Listar los reclamos\n" +
 		                            "Digite cualquier otro numero para salir del sistema \n");
+                System.out.println("---------------------------------------------------------------\n");
                 
         
             try {
@@ -87,24 +88,28 @@ public class App {
     }
 
     public static void insertarUsuario(Connection connection, Scanner input) {
-         System.out.print("Ingrese la direccion del usuario: ");
-            String direccion = input.nextLine();
+        System.out.println("---------------------------------------------------------------\n"); 
+        System.out.print("Ingrese la direccion del usuario: ");
+        String direccion = input.nextLine();
         try {
             String sql = "INSERT INTO usuario (DIRECCION) VALUES ('" + direccion + "')"; //Genero la consulta como string
             Statement statement = connection.createStatement(); //Creo el statement
-            int insertar = statement.executeUpdate(sql); //Ejecuto la consulta
+            int insertar = statement.executeUpdate(sql); //Ejecuto la consulta y verifico si se cumplio
 
             if (insertar > 0) {
-                System.out.println("Usuario insertado exitosamente.");
+                System.out.println("Usuario insertado exitosamente.\n");
+                System.out.println("---------------------------------------------------------------\n");
             }
         } catch (SQLException e) {
-            System.err.println("Error al insertar el usuario: " + e.getMessage());
+            System.err.println("Error al insertar el usuario: " + e.getMessage() + "\n");
+            System.out.println("---------------------------------------------------------------\n");
         }
     }
 
     public static void borrarReclamo(Connection connection,Scanner input)
     {
-         System.out.print("ingresa la numero de reclamo: ");
+        System.out.println("---------------------------------------------------------------\n");
+        System.out.print("Ingresa la numero de reclamo: ");
             int nro_reclamo = input.nextInt();
         try {
             String sql = "DELETE FROM reclamo WHERE NRO_RECLAMO = " + nro_reclamo ; //Genero la consulta como string
@@ -113,37 +118,60 @@ public class App {
 
             if (insertar > 0) {
                 System.out.println("Reclamo eliminado exitosamente.");
+                System.out.println("---------------------------------------------------------------\n");
             }
         } catch (SQLException e) {
             System.err.println("Error al eliminar reclamo: " + e.getMessage());
+            System.out.println("---------------------------------------------------------------\n");
         }
     }
 
-    public static void listarReclamos(Connection connection, Scanner input){
+    public static void listarReclamos(Connection connection, Scanner input) {
 
         System.out.println("Ingrese el numero identificatorio del usuario, para poder buscar sus reclamos: ");
-        int nro_usuario = input.nextInt();
-        
-        try{
-            String sql = "SELECT r.NRO_RECLAMO AS NRO_RECLAMO, r.FECHA_Y HORA AS FECHA_RECLAMO, r_FECHA_RESOLUCION AS FECHA_RESOLUCION, COUNT(l.NRO_LLAMADO) AS CANTIDAD_RELLAMADOS FROM reclamo AS r LEFT JOIN llamado AS l ON r.NRO_RECLAMO == l.NRO_RECLAMO WHERE r.NRO_IDENTIFICATORIO = " + nro_usuario + " ORDER BY r.FECHA_Y_HORA";
-            Statement statement  = connection.createStatement();
-            ResultSet resultSet = statement.executeQuery(sql);
+        int  nro_usuario;
+        try {
+          nro_usuario = input.nextInt();
+        } catch (InputMismatchException e) {
+            System.err.println("Error: Debe ingresar un número.");
+            input.nextLine(); 
+            return; 
+        }
+        input.nextLine();
 
-            System.out.println();
-            System.out.println("Listado de reclamos efectuados por el usuario: " + nro_usuario);
-            while(resultSet.next()){
-                System.out.print("Nro_Reclamo" + resultSet.getString("NRO_RECLAMO") );
-                System.out.print("; FECHA_RECLAMO" + resultSet.getString("FECHA_RECLAMO") );
-                System.out.print("; FECHA_RESOLUCION" + resultSet.getString("FECHA_RESOLUCION") );
-                System.out.print("; CANTIDAD_RELLAMADOS" + resultSet.getString("CANTIDAD_RELLAMADOS") );
+        try {
+            String sql = "SELECT r.NRO_RECLAMO AS NRO_RECLAMO,r.FECHA_Y_HORA AS FECHA_RECLAMO,r.FECHA_RESOLUCION AS FECHA_RESOLUCION,COUNT(l.NRO_LLAMADO) AS CANTIDAD_RELLAMADOS " +
+                         "FROM reclamo r LEFT JOIN llamado l ON r.NRO_RECLAMO = l.NRO_RECLAMO " +
+                         "WHERE r.NRO_IDENTIFICATORIO = " + nro_usuario + " " + 
+                         "GROUP BY r.NRO_RECLAMO, r.FECHA_Y_HORA, r.FECHA_RESOLUCION " + 
+                         "ORDER BY r.FECHA_Y_HORA";
+
+            try (Statement statement = connection.createStatement();
+                 ResultSet resultSet = statement.executeQuery(sql)) {
+
                 System.out.println();
-        
+                System.out.println("Listado de reclamos efectuados por el usuario: " + nro_usuario);
+                System.out.println("---------------------------------------------------------------");
+                boolean hayResultados = false;
+                
+                while (resultSet.next()) {
+                    hayResultados = true;
+                    // He formateado un poco la salida para que sea más legible
+                    System.out.printf("  Nro:" + resultSet.getString("NRO_RECLAMO") + 
+                                      " | Fecha: " + resultSet.getString("FECHA_RECLAMO") +
+                                      " | Resuelto: "+(resultSet.getString("FECHA_RESOLUCION") != null ? resultSet.getString("FECHA_RESOLUCION") : "Pendiente") +
+                                      " | Rellamados:"+ resultSet.getString("CANTIDAD_RELLAMADOS") + "\n");
+                }
+
+                if (!hayResultados) {
+                    System.out.println("El usuario no tiene reclamos registrados.");
+                }
+                System.out.println("---------------------------------------------------------------");
             }
 
-        }catch (SQLException e){
+        } catch (SQLException e) {
             System.err.println("Error al mostrar los reclamos: " + e.getMessage());
         }
-
     }
 
     //FINAL DE LA CLASE APP
